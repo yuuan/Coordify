@@ -1,0 +1,15 @@
+# Xcode generated project (xcodegen で再生成可能)
+*.xcodeproj/
+
+# Xcode user-specific data
+xcuserdata/
+
+# Xcode build artifacts
+DerivedData/
+build/
+
+# Task runner cache
+.task/
+
+# Personal task config
+Taskfile.yml

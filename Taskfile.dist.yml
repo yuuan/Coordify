@@ -1,0 +1,79 @@
+version: "3"
+
+vars:
+  DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
+  PROJECT: Coordify.xcodeproj
+  SCHEME: Coordify
+
+tasks:
+  generate:
+    desc: project.yml から Xcode プロジェクトを生成
+    sources:
+      - project.yml
+      - Coordify/**/*.swift
+      - CoordifyTests/**/*.swift
+    generates:
+      - "{{.PROJECT}}/project.pbxproj"
+    cmds:
+      - xcodegen generate
+
+  build:
+    desc: プロジェクトをビルド
+    deps: [generate]
+    cmds:
+      - >-
+        DEVELOPER_DIR={{.DEVELOPER_DIR}}
+        xcodebuild
+        -project {{.PROJECT}}
+        -scheme {{.SCHEME}}
+        -destination 'platform=macOS'
+        build
+
+  build:strict:
+    desc: warnings-as-errors 付きビルド
+    deps: [generate]
+    cmds:
+      - >-
+        DEVELOPER_DIR={{.DEVELOPER_DIR}}
+        xcodebuild
+        -project {{.PROJECT}}
+        -scheme {{.SCHEME}}
+        -destination 'platform=macOS'
+        OTHER_SWIFT_FLAGS="-warnings-as-errors"
+        build
+
+  test:
+    desc: ユニットテストを実行
+    deps: [generate]
+    cmds:
+      - >-
+        DEVELOPER_DIR={{.DEVELOPER_DIR}}
+        xcodebuild
+        -project {{.PROJECT}}
+        -scheme Coordify
+        -destination 'platform=macOS'
+        test
+
+  lint:
+    desc: SwiftLint + SwiftFormat でコードをチェック
+    env:
+      DEVELOPER_DIR: "{{.DEVELOPER_DIR}}"
+    cmds:
+      - swiftlint lint --strict Coordify/
+      - swiftformat --lint Coordify/
+
+  format:
+    desc: SwiftFormat でコードを自動整形
+    cmds:
+      - swiftformat Coordify/
+
+  clean:
+    desc: ビルド成果物を削除
+    cmds:
+      - >-
+        DEVELOPER_DIR={{.DEVELOPER_DIR}}
+        xcodebuild
+        -project {{.PROJECT}}
+        -scheme {{.SCHEME}}
+        clean
+      - rm -rf ~/Library/Developer/Xcode/DerivedData/Coordify-*
